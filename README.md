@@ -1,4 +1,62 @@
-# Basic Git Scraper Template
+# daily-pennsylvanian-headline-scraper
+
+This project is for CIS 3500 Spring 2024 Homework 2 Part IV.
+
+The goal of this part of the assignment is to learn how to use GitHub Actions to create a web scraper that runs periodically (aka a git scraper).
+
+## Process
+
+We first read about up on the background of webcrawling, web scraping and git scraping. We then familiarized ourselves on the ethicality and legilaty of scraping, in order to follow these guidelines.
+
+We used the template [`basic-git-scraper-template`](https://github.com/jlumbroso/basic-git-scraper-template). The `README.md` for this template is below. We saw how the scraper script runs, and how the data is produced. 
+
+To understand how the initial `script.py` file works, I asked the Claude AI model by Anthropic to explain the file line by line. This explanation can be found in the `INITIAL-SCRAPER-EXPLANATION.pdf` file located in the root directory of this repo.
+
+We then modified the `script.py` file's rule to obtain different data.
+
+## Modifications
+
+Initially, the scaper function collected the main headline of the [Daily Pennsylvanian](https://www.thedp.com/) on a daily basis. I updated it collect both the main headline as well as the date/time of publication of the main headline article. This could be useful to learn when exactly a story was published, and how often the main headline article changes.
+
+Here are the changes made to the file:
+1. The comments for the `scrape_data_point` function were updated to reflect the new return output of the function, which is now a tuple containing the headline and timestamp.
+2. The variable `data_point` was renamed to `headline_text` given that we are now seeking 2 data points and want clear variable names.
+3. We added the below lines to find and store the timestamp of the main article headline. Upon inspecting the website, we determined this datapoint was a `<div>` element with the class `timestamp`.
+```
+timestamp_element = soup.find("div", class_="timestamp")
+        timestamp_text = timestamp_element.text.strip() if timestamp_element else ""
+```
+4. We updated the return of the function to be the below, given we now have 2 data points and must return a tuple.
+```
+loguru.logger.info(f"Headline: {headline_text}")
+        loguru.logger.info(f"Timestamp: {timestamp_text}")
+        return (headline_text, timestamp_text)
+```
+5. If there was an exception where running the scrape, we updated the return to be a tuple `(None, None)` rather than just `None`
+6. When saving the data, we had to update the conditional to ensure that both values in the tuple were not `None` as shown below:
+```
+if data_point[0] is not None and data_point[1] is not None:
+        dem.add_today(data_point)
+        dem.save()
+        loguru.logger.info("Saved daily event monitor")
+```
+
+## Example of Data Collected
+
+```
+[
+      "2024-03-15 04:27PM",
+      [
+        "Excerpts of depositions from Penn admin. offer new insight into Mackenzie Fierceton lawsuit",
+        "03/14/24 2:09am"
+      ]
+    ]
+  ]
+```
+
+---
+
+## Basic Git Scraper Template
 
 This template provides a starting point for **git scraping**—the technique of scraping data from websites and automatically committing it to a Git repository using workflows, [coined by Simon Willison](https://simonwillison.net/2020/Oct/9/git-scraping/).
 
@@ -10,7 +68,7 @@ Tools like GitHub Actions, GitLab CI and others make git scraping adaptable to d
 
 This template includes a sample workflow to demonstrate the core git scraping capabilities. Read on to learn how to customize it!
 
-## Overview
+### Overview
 
 The workflow defined in `.github/workflows/scrape.yaml` runs on a defined schedule to:
 
@@ -20,7 +78,7 @@ The workflow defined in `.github/workflows/scrape.yaml` runs on a defined schedu
 4. Run the python script `script.py` to scrape data
 5. Commit any updated data files to the Git repository
 
-## Scheduling
+### Scheduling
 
 The workflow schedule is configured with [cron syntax](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule) to run:
 
@@ -30,7 +88,7 @@ This once-daily scraping is a good rule-of-thumb, as it is generally respectful 
 
 You can use [crontab.guru](https://crontab.guru/) to generate your own cron schedule.
 
-## Python Libraries
+### Python Libraries
 
 The main libraries used are:
 
@@ -40,7 +98,7 @@ The main libraries used are:
 - [`pytz`](https://github.com/stub42/pytz) - Handling datetimes and timezones  
 - [`waybackpy`](https://github.com/akamhy/waybackpy/) - Scraping web archives (optional)
 
-## Getting Started
+### Getting Started
 
 To adapt this for your own scraping project:
 
@@ -56,7 +114,7 @@ To adapt this for your own scraping project:
 
 Feel free to use this as a starter kit for your Python web scraping projects!
 
-## Setting Up a Local Development
+### Setting Up a Local Development
 
 It is recommended to use a version manager, and virtual environments and environment managers for local development of Python projects.
 
@@ -66,7 +124,7 @@ It is recommended to use a version manager, and virtual environments and environ
 
 Below we detail how to setup these environments to develop this template scrape project locally.
 
-### Setting Up a Python Environment
+#### Setting Up a Python Environment
 
 Once you have installed `asdf`, you can install the Python plugin with:
 
@@ -86,7 +144,7 @@ After that, you can first install `pipenv` with:
 pip install pipenv
 ```
 
-### Installing Project Dependencies
+#### Installing Project Dependencies
 
 Then you can install the dependencies with:
 
@@ -96,7 +154,9 @@ pipenv install --dev
 
 This will create a virtual environment and install the dependencies from the `Pipfile`. The `--dev` flag will also install the development dependencies, which includes `ipykernel` for Jupyter Notebook support.
 
-### Running the Script
+####
+
+ Running the Script
 
 You can then run the script to try it out with:
 
@@ -104,13 +164,13 @@ You can then run the script to try it out with:
 pipenv run python script.py
 ```
 
-## Licensing
+### Licensing
 
 This software is distributed under the terms of the MIT License. You have the freedom to use, modify, distribute, and sell it for any purpose. However, you must include the original copyright notice and the permission notice found in the LICENSE file in all copies or substantial portions of the software.
 
 You can [read more about the MIT license](https://choosealicense.com/licenses/mit/), and [compare different open-source licenses at `choosealicense.com`](https://choosealicense.com/licenses/).
 
-## Some Ethical Guidelines to Consider
+### Some Ethical Guidelines to Consider
 
 Web scraping is a powerful tool for gathering data, and its [legality has been upheld](https://en.wikipedia.org/wiki/HiQ_Labs_v._LinkedIn).
 
