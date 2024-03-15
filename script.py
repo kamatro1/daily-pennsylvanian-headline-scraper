@@ -1,5 +1,5 @@
 """
-Scrapes a headline from The Daily Pennsylvanian website and saves it to a 
+Scrapes a headline from The Daily Pennsylvanian website and saves it to a
 JSON file that tracks headlines over time.
 """
 
@@ -7,18 +7,16 @@ import os
 import sys
 
 import daily_event_monitor
-
 import bs4
 import requests
 import loguru
 
-
 def scrape_data_point():
     """
-    Scrapes the main headline from The Daily Pennsylvanian home page.
+    Scrapes the main headline and timestamp from The Daily Pennsylvanian home page.
 
     Returns:
-        str: The headline text if found, otherwise an empty string.
+        tuple: (headline_text, timestamp_text) if found, otherwise (empty string, empty string).
     """
     req = requests.get("https://www.thedp.com")
     loguru.logger.info(f"Request URL: {req.url}")
@@ -27,13 +25,14 @@ def scrape_data_point():
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
         target_element = soup.find("a", class_="frontpage-link")
-        data_point = "" if target_element is None else target_element.text
-        loguru.logger.info(f"Data point: {data_point}")
-        return data_point
-
+        headline_text = target_element.text if target_element else ""
+        timestamp_element = soup.find("div", class_="timestamp")
+        timestamp_text = timestamp_element.text.strip() if timestamp_element else ""
+        loguru.logger.info(f"Headline: {headline_text}")
+        loguru.logger.info(f"Timestamp: {timestamp_text}")
+        return (headline_text, timestamp_text)
 
 if __name__ == "__main__":
-
     # Setup logger to track runtime
     loguru.logger.add("scrape.log", rotation="1 day")
 
@@ -57,10 +56,10 @@ if __name__ == "__main__":
         data_point = scrape_data_point()
     except Exception as e:
         loguru.logger.error(f"Failed to scrape data point: {e}")
-        data_point = None
+        data_point = (None, None)
 
     # Save data
-    if data_point is not None:
+    if data_point[0] is not None and data_point[1] is not None:
         dem.add_today(data_point)
         dem.save()
         loguru.logger.info("Saved daily event monitor")
