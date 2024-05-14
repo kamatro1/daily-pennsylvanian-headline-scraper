@@ -195,3 +195,5 @@ But it is important to use it responsibly and ethically. Here are some guideline
 9. Document your scraping process thoroughly for replicability, transparency and accountability.
 
 10. Continuously re-evaluate your scraping program against applicable laws and ethical principles.
+
+Note: this readme.md file was created with the help of Anthropic's Claude, partially based off the assignment description
